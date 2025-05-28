@@ -1,0 +1,935 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>仪表板 - 股票分析系统</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: row;
+            min-height: 100vh;
+            margin: 0;
+            padding: 0;
+        }
+        .chart-container {
+            margin-bottom: 20px;
+            background: white;
+            padding: 15px;
+            border-radius: 8px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+        }
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 15px;
+        }
+        .chart-image {
+            width: 100%;
+            max-width: 1000px;
+            height: auto;
+            display: none;
+            margin: 0 auto;
+        }
+        .error-message {
+            color: red;
+            margin: 10px 0;
+            display: none;
+        }
+        .navbar {
+            margin-bottom: 0;
+        }
+        .sidebar {
+            flex: 0 0 250px;
+            position: fixed;
+            top: 56px;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            padding: 20px;
+            background-color: #f8f9fa;
+            border-right: 1px solid #dee2e6;
+            width: 250px;
+            overflow-y: auto;
+        }
+        .main-content {
+            flex: 1 1 0;
+            padding: 20px;
+            min-width: 0;
+            width: 100%;
+            margin-left: 250px; /* 保证和原有布局兼容 */
+        }
+        .nav-button {
+            width: 100%;
+            text-align: left;
+            margin-bottom: 10px;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            background-color: #fff;
+            color: #333;
+            transition: all 0.3s;
+        }
+        .nav-button:hover {
+            background-color: #e9ecef;
+        }
+        .nav-button.active {
+            background-color: #0d6efd;
+            color: #fff;
+        }
+        .content-section {
+            margin-top: 50px;
+            display: none;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .container-fluid {
+            width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        .metrics-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+            background-color: white;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        .metrics-table th, .metrics-table td {
+            padding: 12px 15px;
+            text-align: center;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .metrics-table th {
+            background-color: #f8f9fa;
+            font-weight: 600;
+            color: #495057;
+        }
+        .metrics-table tr:last-child td {
+            border-bottom: none;
+        }
+        .metrics-table tr:hover {
+            background-color: #f8f9fa;
+        }
+        .metrics-table-container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            margin-bottom: 2rem;
+        }
+        .metrics-table-container h4 {
+            color: #495057;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="#">股票分析系统</a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="{{ url_for('logout') }}">退出登录</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="sidebar">
+        <h5 class="mb-3">分析功能</h5>
+        <div class="mb-3">
+            <label for="stockSelect" class="form-label">选择股票：</label>
+            <select class="form-select" id="stockSelect">
+                <option value="600519.SH">贵州茅台 (600519.SH)</option>
+                <option value="601328.SH">交通银行 (601328.SH)</option>
+            </select>
+        </div>
+        <button class="nav-button active" data-section="basic-analysis">
+            <i class="bi bi-graph-up"></i> 数据分析
+        </button>
+        <button class="nav-button" data-section="prophet-analysis">
+            <i class="bi bi-calendar-check"></i> Prophet模型预测
+        </button>
+        <button class="nav-button" data-section="arima-analysis">
+            <i class="bi bi-bar-chart"></i> ARIMA模型分析
+        </button>
+        <button class="nav-button" data-section="rf-analysis">
+            <i class="bi bi-diagram-3"></i> 随机森林模型分析
+        </button>
+        <button class="nav-button" data-section="model-metrics">
+            <i class="bi bi-bar-chart-line"></i> 模型评估指标
+        </button>
+        <button class="nav-button" data-section="stocks-comparison">
+            <i class="bi bi-graph-up-arrow"></i> 股票对比分析
+        </button>
+        <button class="nav-button" data-section="timeframe-analysis">
+            <i class="bi bi-clock-history"></i> 多时间尺度预测
+        </button>
+    </div>
+
+    <div class="main-content">
+        <div class="container-fluid">
+            <!-- 基础分析部分 -->
+            <div id="basic-analysis" class="content-section active">
+                <h2 class="mb-4">基础数据分析</h2>
+                <div class="loading" id="basicLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在生成分析图表...</p>
+                </div>
+                <div class="error-message" id="basicError"></div>
+                <div class="chart-container">
+                    <h4>股票价格趋势</h4>
+                    <img id="trendPlot" class="chart-image" src="" alt="价格趋势图">
+                </div>
+                <div class="chart-container">
+                    <h4>收盘价分布</h4>
+                    <img id="distributionPlot" class="chart-image" src="" alt="价格分布图">
+                </div>
+                <div class="chart-container">
+                    <h4>基本统计信息</h4>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr><th>指标</th><th>值</th></tr>
+                                <tr><td>平均价格</td><td id="meanPrice">-</td></tr>
+                                <tr><td>标准差</td><td id="stdPrice">-</td></tr>
+                                <tr><td>最低价格</td><td id="minPrice">-</td></tr>
+                                <tr><td>最高价格</td><td id="maxPrice">-</td></tr>
+                            </table>
+                        </div>
+                        <div class="col-md-6">
+                            <table class="table table-bordered">
+                                <tr><th>指标</th><th>值</th></tr>
+                                <tr><td>最新价格</td><td id="latestPrice">-</td></tr>
+                                <tr><td>起始日期</td><td id="startDate">-</td></tr>
+                                <tr><td>结束日期</td><td id="endDate">-</td></tr>
+                                <tr><td>总交易天数</td><td id="totalDays">-</td></tr>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prophet预测部分 -->
+            <div id="prophet-analysis" class="content-section">
+                <h2 class="mb-4">Prophet模型预测</h2>
+                <div class="loading" id="prophetLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在进行预测分析...</p>
+                </div>
+                <div class="error-message" id="prophetError"></div>
+                <div class="alert alert-info" id="prophetParams">
+                    <strong>模型参数：</strong>正在加载...
+                </div>
+                <div class="chart-container">
+                    <h4>预测结果</h4>
+                    <img id="forecastPlot" class="chart-image" src="" alt="预测结果图">
+                </div>
+                <div class="chart-container">
+                    <h4>趋势分解</h4>
+                    <img id="componentsPlot" class="chart-image" src="" alt="趋势分解图">
+                </div>
+                <div class="chart-container">
+                    <h4>实际值与预测值对比</h4>
+                    <img id="comparePlot" class="chart-image" src="" alt="对比图">
+                </div>
+                <div class="chart-container">
+                    <h4>预测误差分布</h4>
+                    <img id="prophetTestErrorHist" class="chart-image" src="" alt="Prophet预测误差分布">
+                </div>
+                <div class="metrics-table-container">
+                    <h4>方向性预测指标</h4>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>方向准确率</th>
+                                <th>上涨准确率</th>
+                                <th>下跌准确率</th>
+                                <th>最长连续预测</th>
+                                <th>平均趋势期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="prophetDirectionMetrics"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- ARIMA模型分析 -->
+            <div class="content-section" id="arima-analysis">
+                <h2>ARIMA模型分析</h2>
+                <div class="loading" id="arimaLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在生成ARIMA模型分析结果...</p>
+                </div>
+                <div class="error-message" id="arimaError"></div>
+                <div class="chart-container">
+                    <div class="chart">
+                        <h4>ARIMA模型训练验证结果</h4>
+                        <img id="arima-prediction" class="chart-image" src="" alt="ARIMA预测结果">
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h4>预测误差分布</h4>
+                    <img id="arimaTestErrorHist" class="chart-image" src="" alt="ARIMA预测误差分布">
+                </div>
+                <div class="metrics-table-container">
+                    <h4>方向性预测指标</h4>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>方向准确率</th>
+                                <th>上涨准确率</th>
+                                <th>下跌准确率</th>
+                                <th>最长连续预测</th>
+                                <th>平均趋势期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="arimaDirectionMetrics"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 随机森林模型分析 -->
+            <div class="content-section" id="rf-analysis">
+                <h2>随机森林模型分析</h2>
+                <div class="loading" id="rfLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在生成随机森林模型分析结果...</p>
+                </div>
+                <div class="error-message" id="rfError"></div>
+                <div class="chart-container">
+                    <div class="chart">
+                        <h4>随机森林模型训练验证结果</h4>
+                        <img id="rf-prediction" class="chart-image" src="" alt="随机森林预测结果">
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <h4>预测误差分布</h4>
+                    <img id="rfTestErrorHist" class="chart-image" src="" alt="随机森林预测误差分布">
+                </div>
+                <div class="chart-container">
+                    <h4>特征重要性</h4>
+                    <img id="rfFeatureImportance" class="chart-image" src="" alt="随机森林特征重要性">
+                </div>
+                <div class="metrics-table-container">
+                    <h4>方向性预测指标</h4>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>方向准确率</th>
+                                <th>上涨准确率</th>
+                                <th>下跌准确率</th>
+                                <th>最长连续预测</th>
+                                <th>平均趋势期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rfDirectionMetrics"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 模型指标对比部分 -->
+            <div id="model-metrics" class="content-section">
+                <h2 class="mb-4">模型评估指标对比</h2>
+                <div class="loading" id="metricsLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在计算模型评估指标...</p>
+                </div>
+                <div class="error-message" id="metricsError"></div>
+                <div class="alert alert-info">
+                    <strong>说明：</strong>以下评估指标来源于模型训练过程（model_training.py）中的最终模型评估指标。
+                </div>
+                <div id="metricsPlots" class="chart-container">
+                    <div class="plot-container">
+                        <h4>RMSE指标对比</h4>
+                        <img id="rmseMetricsPlot" class="chart-image" src="" alt="RMSE指标对比图">
+                    </div>
+                    <div class="plot-container">
+                        <h4>MAE指标对比</h4>
+                        <img id="maeMetricsPlot" class="chart-image" src="" alt="MAE指标对比图">
+                    </div>
+                    <div class="plot-container">
+                        <h4>MAPE指标对比</h4>
+                        <img id="mapeMetricsPlot" class="chart-image" src="" alt="MAPE指标对比图">
+                    </div>
+                </div>
+                <div class="metrics-table-container">
+                    <h4>最佳模型评估指标</h4>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>模型</th>
+                                <th>RMSE</th>
+                                <th>MAE</th>
+                                <th>MAPE</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bestModelMetrics">
+                        </tbody>
+                    </table>
+                </div>
+                <div id="directionMetricsContainer" class="metrics-table-container">
+                    <h4>方向性预测指标</h4>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>模型</th>
+                                <th>方向准确率</th>
+                                <th>上涨准确率</th>
+                                <th>下跌准确率</th>
+                                <th>最长连续预测</th>
+                                <th>平均趋势期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="directionMetricsTable">
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- 股票对比分析部分 -->
+            <div id="stocks-comparison" class="content-section">
+                <h2 class="mb-4">股票对比分析</h2>
+                <div class="loading" id="comparisonLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在生成对比分析图表...</p>
+                </div>
+                <div class="error-message" id="comparisonError"></div>
+                <div class="alert alert-info">
+                    <strong>说明：</strong>以下图表展示了不同股票在各个模型上的预测效果对比。
+                </div>
+                <div class="chart-container">
+                    <h4>RMSE指标对比</h4>
+                    <img id="rmseComparisonPlot" class="chart-image" src="" alt="RMSE对比图">
+                </div>
+                <div class="chart-container">
+                    <h4>MAE指标对比</h4>
+                    <img id="maeComparisonPlot" class="chart-image" src="" alt="MAE对比图">
+                </div>
+                <div class="chart-container">
+                    <h4>MAPE指标对比</h4>
+                    <img id="mapeComparisonPlot" class="chart-image" src="" alt="MAPE对比图">
+                </div>
+                <div class="metrics-table-container">
+                    <h4>详细评估指标</h4>
+                    <div id="comparisonMetricsTable"></div>
+                </div>
+            </div>
+
+            <!-- 多时间尺度预测部分 -->
+            <div id="timeframe-analysis" class="content-section">
+                <h2 class="mb-4">多时间尺度预测</h2>
+                <div class="loading" id="timeframeLoading">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">加载中...</span>
+                    </div>
+                    <p class="mt-2">正在加载多时间尺度预测...</p>
+                </div>
+                <div class="error-message" id="timeframeError"></div>
+                <div class="metrics-table-container">
+                    <h4>多时间尺度预测指标</h4>
+                    <table class="metrics-table">
+                        <thead>
+                            <tr>
+                                <th>时间尺度</th>
+                                <th>RMSE</th>
+                                <th>MAE</th>
+                                <th>MAPE</th>
+                                <th>方向准确率</th>
+                                <th>上涨准确率</th>
+                                <th>下跌准确率</th>
+                                <th>最长连续预测</th>
+                                <th>平均趋势期</th>
+                            </tr>
+                        </thead>
+                        <tbody id="timeframeMetricsTable"></tbody>
+                    </table>
+                </div>
+                <div class="metrics-table-container">
+                    <h4>短期预测（5天）</h4>
+                    <table class="metrics-table"><thead><tr><th>日期</th><th>预测值</th></tr></thead>
+                        <tbody id="shortTermTable"></tbody>
+                    </table>
+                </div>
+                <div class="metrics-table-container">
+                    <h4>中期预测（1个月）</h4>
+                    <img id="mediumTermPlot" class="chart-image" src="" alt="中期预测图">
+                </div>
+                <div class="metrics-table-container">
+                    <h4>中长期预测（6个月）</h4>
+                    <img id="sixMonthTermPlot" class="chart-image" src="" alt="中长期预测图">
+                </div>
+                <div class="metrics-table-container">
+                    <h4>长期预测（1年）</h4>
+                    <img id="longTermPlot" class="chart-image" src="" alt="长期预测图">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // 在页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取股票选择下拉框
+            const stockSelect = document.getElementById('stockSelect');
+            
+            // 为股票选择添加事件监听
+            stockSelect.addEventListener('change', function() {
+                const selectedStock = this.value;
+                // 根据当前激活的部分重新加载数据
+                const activeSection = document.querySelector('.content-section.active');
+                if (activeSection) {
+                    const sectionId = activeSection.id;
+                    switch(sectionId) {
+                        case 'basic-analysis':
+                            loadBasicAnalysis(selectedStock);
+                            break;
+                        case 'prophet-analysis':
+                            loadProphetAnalysis(selectedStock);
+                            break;
+                        case 'arima-analysis':
+                            loadARIMAAnalysis(selectedStock);
+                            break;
+                        case 'rf-analysis':
+                            loadRFAnalysis(selectedStock);
+                            break;
+                        case 'model-metrics':
+                            loadModelMetrics(selectedStock);
+                            break;
+                        case 'stocks-comparison':
+                            loadStocksComparison();
+                            break;
+                        case 'timeframe-analysis':
+                            loadTimeframePrediction(selectedStock);
+                            break;
+                    }
+                }
+            });
+
+            // 修改导航按钮点击事件
+            document.querySelectorAll('.nav-button').forEach(button => {
+                button.addEventListener('click', function() {
+                    // 移除所有按钮的active类
+                    document.querySelectorAll('.nav-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    // 添加当前按钮的active类
+                    this.classList.add('active');
+                    
+                    // 隐藏所有内容区域
+                    document.querySelectorAll('.content-section').forEach(section => {
+                        section.classList.remove('active');
+                    });
+                    
+                    // 显示对应的内容区域
+                    const sectionId = this.getAttribute('data-section');
+                    document.getElementById(sectionId).classList.add('active');
+                    
+                    // 根据不同的部分加载相应的数据
+                    const selectedStock = document.getElementById('stockSelect').value;
+                    
+                    switch(sectionId) {
+                        case 'basic-analysis':
+                            loadBasicAnalysis(selectedStock);
+                            break;
+                        case 'prophet-analysis':
+                            loadProphetAnalysis(selectedStock);
+                            break;
+                        case 'arima-analysis':
+                            loadARIMAAnalysis(selectedStock);
+                            break;
+                        case 'rf-analysis':
+                            loadRFAnalysis(selectedStock);
+                            break;
+                        case 'model-metrics':
+                            loadModelMetrics(selectedStock);
+                            break;
+                        case 'stocks-comparison':
+                            loadStocksComparison();
+                            break;
+                        case 'timeframe-analysis':
+                            loadTimeframePrediction(selectedStock);
+                            break;
+                    }
+                });
+            });
+
+            // 修改加载函数，添加stock_code参数
+            function loadBasicAnalysis(stockCode) {
+                const loading = document.getElementById('basicLoading');
+                const error = document.getElementById('basicError');
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                
+                fetch(`/api/basic-analysis?stock_code=${stockCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        document.getElementById('trendPlot').src = data.trend_plot;
+                        document.getElementById('distributionPlot').src = data.distribution_plot;
+                        
+                        document.getElementById('meanPrice').textContent = data.stats.mean.toFixed(2);
+                        document.getElementById('stdPrice').textContent = data.stats.std.toFixed(2);
+                        document.getElementById('minPrice').textContent = data.stats.min.toFixed(2);
+                        document.getElementById('maxPrice').textContent = data.stats.max.toFixed(2);
+                        document.getElementById('latestPrice').textContent = data.stats.latest.toFixed(2);
+                        document.getElementById('startDate').textContent = data.stats.start_date;
+                        document.getElementById('endDate').textContent = data.stats.end_date;
+                        document.getElementById('totalDays').textContent = data.stats.total_days;
+                        
+                        document.getElementById('trendPlot').style.display = 'block';
+                        document.getElementById('distributionPlot').style.display = 'block';
+                    })
+                    .catch(error => {
+                        document.getElementById('basicError').textContent = error.message;
+                        document.getElementById('basicError').style.display = 'block';
+                    })
+                    .finally(() => {
+                        loading.style.display = 'none';
+                    });
+            }
+
+            function loadProphetAnalysis(stockCode) {
+                const loading = document.getElementById('prophetLoading');
+                const error = document.getElementById('prophetError');
+                const paramsDiv = document.getElementById('prophetParams');
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                paramsDiv.style.display = 'none';
+                
+                fetch(`/api/prophet-prediction?stock_code=${stockCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        document.getElementById('forecastPlot').src = data.forecast_plot;
+                        document.getElementById('componentsPlot').src = data.components_plot;
+                        document.getElementById('comparePlot').src = data.compare_plot;
+                        
+                        document.getElementById('forecastPlot').style.display = 'block';
+                        document.getElementById('componentsPlot').style.display = 'block';
+                        document.getElementById('comparePlot').style.display = 'block';
+                        
+                        // 新增：误差分布直方图
+                        if (data.test_error_hist) {
+                            document.getElementById('prophetTestErrorHist').src = data.test_error_hist;
+                            document.getElementById('prophetTestErrorHist').style.display = 'block';
+                        }
+                        // 新增：方向性预测指标
+                        if (data.direction_metrics) {
+                            const m = data.direction_metrics;
+                            document.getElementById('prophetDirectionMetrics').innerHTML = `
+                                <tr>
+                                    <td>${(m.direction_accuracy*100).toFixed(2)}%</td>
+                                    <td>${(m.up_accuracy*100).toFixed(2)}%</td>
+                                    <td>${(m.down_accuracy*100).toFixed(2)}%</td>
+                                    <td>${m.max_trend_streak}</td>
+                                    <td>${m.avg_trend_period.toFixed(1)}</td>
+                                </tr>`;
+                        }
+                        // 显示模型参数
+                        if (data.parameters) {
+                            paramsDiv.innerHTML = `
+                                <strong>模型参数：</strong> 
+                                changepoint_prior_scale: ${data.parameters.changepoint_prior_scale}, 
+                                seasonality_prior_scale: ${data.parameters.seasonality_prior_scale} 
+                                <span class="badge bg-success">最优参数组合</span>
+                            `;
+                            paramsDiv.style.display = 'block';
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('prophetError').textContent = error.message;
+                        document.getElementById('prophetError').style.display = 'block';
+                    })
+                    .finally(() => {
+                        loading.style.display = 'none';
+                    });
+            }
+
+            function loadARIMAAnalysis(stockCode) {
+                const loading = document.getElementById('arimaLoading');
+                const error = document.getElementById('arimaError');
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                
+                fetch(`/api/arima-analysis?stock_code=${stockCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        document.getElementById('arima-prediction').src = data.prediction_plot;
+                        document.getElementById('arima-prediction').style.display = 'block';
+                        // 新增：误差分布直方图
+                        if (data.test_error_hist) {
+                            document.getElementById('arimaTestErrorHist').src = data.test_error_hist;
+                            document.getElementById('arimaTestErrorHist').style.display = 'block';
+                        }
+                        // 新增：方向性预测指标
+                        if (data.direction_metrics) {
+                            const m = data.direction_metrics;
+                            document.getElementById('arimaDirectionMetrics').innerHTML = `
+                                <tr>
+                                    <td>${(m.direction_accuracy*100).toFixed(2)}%</td>
+                                    <td>${(m.up_accuracy*100).toFixed(2)}%</td>
+                                    <td>${(m.down_accuracy*100).toFixed(2)}%</td>
+                                    <td>${m.max_trend_streak}</td>
+                                    <td>${m.avg_trend_period.toFixed(1)}</td>
+                                </tr>`;
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('arimaError').textContent = error.message;
+                        document.getElementById('arimaError').style.display = 'block';
+                    })
+                    .finally(() => {
+                        loading.style.display = 'none';
+                    });
+            }
+
+            function loadRFAnalysis(stockCode) {
+                const loading = document.getElementById('rfLoading');
+                const error = document.getElementById('rfError');
+                loading.style.display = 'block';
+                error.style.display = 'none';
+                
+                fetch(`/api/random-forest-analysis?stock_code=${stockCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        document.getElementById('rf-prediction').src = data.prediction_plot;
+                        document.getElementById('rf-prediction').style.display = 'block';
+                        // 新增：误差分布直方图
+                        if (data.test_error_hist) {
+                            document.getElementById('rfTestErrorHist').src = data.test_error_hist;
+                            document.getElementById('rfTestErrorHist').style.display = 'block';
+                        }
+                        if (data.feature_importance_plot) {
+                            document.getElementById('rfFeatureImportance').src = data.feature_importance_plot;
+                            document.getElementById('rfFeatureImportance').style.display = 'block';
+                        }
+                        // 新增：方向性预测指标
+                        if (data.direction_metrics) {
+                            const m = data.direction_metrics;
+                            document.getElementById('rfDirectionMetrics').innerHTML = `
+                                <tr>
+                                    <td>${(m.direction_accuracy*100).toFixed(2)}%</td>
+                                    <td>${(m.up_accuracy*100).toFixed(2)}%</td>
+                                    <td>${(m.down_accuracy*100).toFixed(2)}%</td>
+                                    <td>${m.max_trend_streak}</td>
+                                    <td>${m.avg_trend_period.toFixed(1)}</td>
+                                </tr>`;
+                        }
+                    })
+                    .catch(error => {
+                        document.getElementById('rfError').textContent = error.message;
+                        document.getElementById('rfError').style.display = 'block';
+                    })
+                    .finally(() => {
+                        loading.style.display = 'none';
+                    });
+            }
+
+            function loadModelMetrics(stockCode) {
+                const loading = document.getElementById('metricsLoading');
+                const error = document.getElementById('metricsError');
+                loading.style.display = 'block';
+                error.style.display = 'none';
+
+                fetch(`/api/model-metrics?stock_code=${stockCode}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+                        
+                        document.getElementById('rmseMetricsPlot').src = data.rmse_metrics_plot;
+                        document.getElementById('maeMetricsPlot').src = data.mae_metrics_plot;
+                        document.getElementById('mapeMetricsPlot').src = data.mape_metrics_plot;
+                        
+                        document.getElementById('rmseMetricsPlot').style.display = 'block';
+                        document.getElementById('maeMetricsPlot').style.display = 'block';
+                        document.getElementById('mapeMetricsPlot').style.display = 'block';
+
+                        // 更新最佳模型指标表格
+                        const bestModelMetrics = document.getElementById('bestModelMetrics');
+                        bestModelMetrics.innerHTML = `
+                            <tr>
+                                <td>${data.model_comparison.best_model}</td>
+                                <td>${data.model_comparison.metrics.rmse.toFixed(2)}</td>
+                                <td>${data.model_comparison.metrics.mae.toFixed(2)}</td>
+                                <td>${(data.model_comparison.metrics.mape * 100).toFixed(2)}%</td>
+                            </tr>
+                        `;
+
+                        // 加载方向性指标
+                        const directionTable = document.getElementById('directionMetricsTable');
+                        const dm = data.direction_metrics;
+                        let dirHtml = '';
+                        for (const model in dm) {
+                            const m = dm[model] || {};
+                            dirHtml += `<tr>
+                                <td>${model.toUpperCase()}</td>
+                                <td>${(m.direction_accuracy*100 || 0).toFixed(2)}%</td>
+                                <td>${(m.up_accuracy*100 || 0).toFixed(2)}%</td>
+                                <td>${(m.down_accuracy*100 || 0).toFixed(2)}%</td>
+                                <td>${m.max_trend_streak || 0}</td>
+                                <td>${(m.avg_trend_period || 0).toFixed(1)}</td>
+                            </tr>`;
+                        }
+                        directionTable.innerHTML = dirHtml;
+                    })
+                    .catch(error => {
+                        document.getElementById('metricsError').textContent = error.message;
+                        document.getElementById('metricsError').style.display = 'block';
+                    })
+                    .finally(() => {
+                        loading.style.display = 'none';
+                    });
+            }
+
+            // 添加股票对比分析加载函数
+            function loadStocksComparison() {
+                const loading = document.getElementById('comparisonLoading');
+                const error = document.getElementById('comparisonError');
+                loading.style.display = 'block';
+                error.style.display = 'none';
+
+                fetch('/api/stocks-comparison')
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.error) {
+                            throw new Error(data.error);
+                        }
+
+                        // 显示对比图表
+                        document.getElementById('rmseComparisonPlot').src = data.comparison_plots.rmse_comparison;
+                        document.getElementById('maeComparisonPlot').src = data.comparison_plots.mae_comparison;
+                        document.getElementById('mapeComparisonPlot').src = data.comparison_plots.mape_comparison;
+
+                        // 显示图表
+                        document.getElementById('rmseComparisonPlot').style.display = 'block';
+                        document.getElementById('maeComparisonPlot').style.display = 'block';
+                        document.getElementById('mapeComparisonPlot').style.display = 'block';
+
+                        // 生成详细评估指标表格
+                        const tableContainer = document.getElementById('comparisonMetricsTable');
+                        let tableHtml = '<table class="metrics-table">';
+                        tableHtml += '<thead><tr><th>股票</th><th>模型</th><th>RMSE</th><th>MAE</th><th>MAPE</th></tr></thead><tbody>';
+                        
+                        for (const stockCode in data.stocks_metrics) {
+                            const stockName = stockCode === '600519.SH' ? '贵州茅台' : '交通银行';
+                            for (const model in data.stocks_metrics[stockCode]) {
+                                const metrics = data.stocks_metrics[stockCode][model].test;
+                                tableHtml += `<tr>
+                                    <td>${stockName}</td>
+                                    <td>${model.toUpperCase()}</td>
+                                    <td>${metrics.rmse.toFixed(2)}</td>
+                                    <td>${metrics.mae.toFixed(2)}</td>
+                                    <td>${(metrics.mape * 100).toFixed(2)}%</td>
+                                </tr>`;
+                            }
+                        }
+                        
+                        tableHtml += '</tbody></table>';
+                        tableContainer.innerHTML = tableHtml;
+                    })
+                    .catch(error => {
+                        document.getElementById('comparisonError').textContent = error.message;
+                        document.getElementById('comparisonError').style.display = 'block';
+                    })
+                    .finally(() => {
+                        loading.style.display = 'none';
+                    });
+            }
+
+            // 新增多时间尺度预测加载函数
+            function loadTimeframePrediction(stockCode) {
+                const loading = document.getElementById('timeframeLoading');
+                const error = document.getElementById('timeframeError');
+                loading.style.display = 'block'; error.style.display = 'none';
+                fetch(`/api/timeframe-predictions?stock_code=${stockCode}`)
+                    .then(res => res.json())
+                    .then(data => {
+                        if (data.error) throw new Error(data.error);
+                        // 指标表格
+                        let metricsHtml = '';
+                        const tfNames = {short_term:'短期', medium_term:'中期', six_month_term:'中长期', long_term:'长期'};
+                        ['short_term','medium_term','six_month_term','long_term'].forEach(tf => {
+                            const m = data[tf]?.metrics || {};
+                            const d = data[tf]?.direction_metrics || {};
+                            metricsHtml += `<tr>
+                                <td>${tfNames[tf]}</td>
+                                <td>${(m.rmse!==null&&m.rmse!==undefined)?m.rmse.toFixed(2):'-'}</td>
+                                <td>${(m.mae!==null&&m.mae!==undefined)?m.mae.toFixed(2):'-'}</td>
+                                <td>${(m.mape!==null&&m.mape!==undefined)?(m.mape*100).toFixed(2)+'%':'-'}</td>
+                                <td>${(d.direction_accuracy!==undefined?(d.direction_accuracy*100).toFixed(2)+'%':'-')}</td>
+                                <td>${(d.up_accuracy!==undefined?(d.up_accuracy*100).toFixed(2)+'%':'-')}</td>
+                                <td>${(d.down_accuracy!==undefined?(d.down_accuracy*100).toFixed(2)+'%':'-')}</td>
+                                <td>${d.max_trend_streak!==undefined?d.max_trend_streak:'-'}</td>
+                                <td>${d.avg_trend_period!==undefined?d.avg_trend_period.toFixed(1):'-'}</td>
+                            </tr>`;
+                        });
+                        document.getElementById('timeframeMetricsTable').innerHTML = metricsHtml;
+                        // 短期表格
+                        let html = '';
+                        if(data.short_term && data.short_term.forecast_dates) {
+                            data.short_term.forecast_dates.forEach((d,i) => {
+                                html += `<tr><td>${d}</td><td>${data.short_term.forecast_values[i].toFixed(2)}</td></tr>`;
+                            });
+                        }
+                        document.getElementById('shortTermTable').innerHTML = html;
+                        // 中期、6个月、长期图片
+                        if(data.medium_term && data.medium_term.forecast_plot) {
+                            document.getElementById('mediumTermPlot').src = data.medium_term.forecast_plot;
+                            document.getElementById('mediumTermPlot').style.display = 'block';
+                        }
+                        if(data.six_month_term && data.six_month_term.forecast_plot) {
+                            document.getElementById('sixMonthTermPlot').src = data.six_month_term.forecast_plot;
+                            document.getElementById('sixMonthTermPlot').style.display = 'block';
+                        }
+                        if(data.long_term && data.long_term.forecast_plot) {
+                            document.getElementById('longTermPlot').src = data.long_term.forecast_plot;
+                            document.getElementById('longTermPlot').style.display = 'block';
+                        }
+                    })
+                    .catch(err => {
+                        document.getElementById('timeframeError').textContent = err.message;
+                        document.getElementById('timeframeError').style.display = 'block';
+                    })
+                    .finally(() => { loading.style.display = 'none'; });
+            }
+
+            // 初始加载默认股票（贵州茅台）的基础分析数据
+            loadBasicAnalysis('600519.SH');
+        });
+    </script>
+</body>
+</html> 

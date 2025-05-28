@@ -1,0 +1,420 @@
+{
+    "prophet": {
+        "metrics_list": [
+            {
+                "rmse": 10.031347216543027,
+                "mae": 4.925772909621332,
+                "mape": 0.03090727327174639,
+                "window_start": "2013-01-04",
+                "window_end": "2014-01-24"
+            },
+            {
+                "rmse": 12.448198357368277,
+                "mae": 7.16353507287518,
+                "mape": 0.0477457223366593,
+                "window_start": "2013-04-15",
+                "window_end": "2014-05-06"
+            },
+            {
+                "rmse": 6.9958221382068695,
+                "mae": 4.2721335232923785,
+                "mape": 0.027723016701206832,
+                "window_start": "2013-07-19",
+                "window_end": "2014-08-04"
+            },
+            {
+                "rmse": 54.400620706029,
+                "mae": 26.135242411396984,
+                "mape": 0.1470069687490075,
+                "window_start": "2013-10-28",
+                "window_end": "2014-11-10"
+            },
+            {
+                "rmse": 16.564627608202986,
+                "mae": 7.283079420183288,
+                "mape": 0.034034579155834764,
+                "window_start": "2014-01-24",
+                "window_end": "2015-02-09"
+            },
+            {
+                "rmse": 15.824858743173687,
+                "mae": 8.537069724725168,
+                "mape": 0.03921706286520664,
+                "window_start": "2014-05-06",
+                "window_end": "2015-05-19"
+            },
+            {
+                "rmse": 10.631548531623412,
+                "mae": 6.638901689655978,
+                "mape": 0.03244548349604573,
+                "window_start": "2014-08-04",
+                "window_end": "2015-08-17"
+            },
+            {
+                "rmse": 18.612822797909807,
+                "mae": 11.087669912251489,
+                "mape": 0.052365762391626325,
+                "window_start": "2014-11-10",
+                "window_end": "2015-11-24"
+            },
+            {
+                "rmse": 17.40144916418706,
+                "mae": 10.5095109384581,
+                "mape": 0.04411628667755025,
+                "window_start": "2015-02-09",
+                "window_end": "2016-03-01"
+            },
+            {
+                "rmse": 82.16882812285134,
+                "mae": 38.57310851650133,
+                "mape": 0.1290523803906593,
+                "window_start": "2015-05-19",
+                "window_end": "2016-05-31"
+            },
+            {
+                "rmse": 19.534004171095898,
+                "mae": 10.032282736404223,
+                "mape": 0.034026213712699996,
+                "window_start": "2015-08-17",
+                "window_end": "2016-08-30"
+            },
+            {
+                "rmse": 48.664334590253645,
+                "mae": 24.701211481919973,
+                "mape": 0.07220062441924385,
+                "window_start": "2015-11-24",
+                "window_end": "2016-12-07"
+            },
+            {
+                "rmse": 13.166517198637926,
+                "mae": 7.312570218694772,
+                "mape": 0.018585196962437562,
+                "window_start": "2016-03-01",
+                "window_end": "2017-03-15"
+            },
+            {
+                "rmse": 23.93698231944108,
+                "mae": 12.781398098533918,
+                "mape": 0.028303943365425726,
+                "window_start": "2016-05-31",
+                "window_end": "2017-06-19"
+            },
+            {
+                "rmse": 87.78925129778902,
+                "mae": 42.096871966817496,
+                "mape": 0.06905873787378841,
+                "window_start": "2016-08-30",
+                "window_end": "2017-09-14"
+            },
+            {
+                "rmse": 57.89536969029081,
+                "mae": 29.772761082402507,
+                "mape": 0.04268146275295805,
+                "window_start": "2016-12-07",
+                "window_end": "2017-12-20"
+            },
+            {
+                "rmse": 29.056665413447398,
+                "mae": 17.934504747168045,
+                "mape": 0.02666018493661322,
+                "window_start": "2017-03-15",
+                "window_end": "2018-03-28"
+            },
+            {
+                "rmse": 45.93167954301769,
+                "mae": 23.341830560305997,
+                "mape": 0.033997476023170596,
+                "window_start": "2017-06-19",
+                "window_end": "2018-07-02"
+            },
+            {
+                "rmse": 224.43871635959917,
+                "mae": 113.15719760912567,
+                "mape": 0.19271613698905973,
+                "window_start": "2017-09-14",
+                "window_end": "2018-09-28"
+            },
+            {
+                "rmse": 75.77650856848179,
+                "mae": 38.679018280374464,
+                "mape": 0.05121211028006608,
+                "window_start": "2017-12-20",
+                "window_end": "2019-01-07"
+            },
+            {
+                "rmse": 163.23785818592606,
+                "mae": 80.98486149487806,
+                "mape": 0.09052673275239156,
+                "window_start": "2018-03-28",
+                "window_end": "2019-04-15"
+            },
+            {
+                "rmse": 230.6097358345659,
+                "mae": 108.9207514170232,
+                "mape": 0.10152280626503828,
+                "window_start": "2018-07-02",
+                "window_end": "2019-07-17"
+            },
+            {
+                "rmse": 51.174572468276345,
+                "mae": 29.561000743437873,
+                "mape": 0.027173848674950377,
+                "window_start": "2018-09-28",
+                "window_end": "2019-10-23"
+            },
+            {
+                "rmse": 48.82721974011718,
+                "mae": 27.99153808543795,
+                "mape": 0.02493841778589622,
+                "window_start": "2019-01-07",
+                "window_end": "2020-01-21"
+            },
+            {
+                "rmse": 40.297944104986186,
+                "mae": 25.598841803805023,
+                "mape": 0.019261956195498964,
+                "window_start": "2019-04-15",
+                "window_end": "2020-04-29"
+            },
+            {
+                "rmse": 197.12784588698457,
+                "mae": 102.81505578626688,
+                "mape": 0.06320845406402979,
+                "window_start": "2019-07-17",
+                "window_end": "2020-08-03"
+            },
+            {
+                "rmse": 243.59504145784916,
+                "mae": 117.1846670981891,
+                "mape": 0.061543856022769884,
+                "window_start": "2019-10-23",
+                "window_end": "2020-11-09"
+            },
+            {
+                "rmse": 746.3617845626827,
+                "mae": 350.03284174864115,
+                "mape": 0.1736803440496257,
+                "window_start": "2020-01-21",
+                "window_end": "2021-02-05"
+            },
+            {
+                "rmse": 390.52252259075124,
+                "mae": 178.50727609251715,
+                "mape": 0.09543240856808174,
+                "window_start": "2020-04-29",
+                "window_end": "2021-05-19"
+            },
+            {
+                "rmse": 97.08701904239285,
+                "mae": 56.121549278000025,
+                "mape": 0.030076910481314473,
+                "window_start": "2020-08-03",
+                "window_end": "2021-08-17"
+            },
+            {
+                "rmse": 479.05060884792545,
+                "mae": 204.6296215302495,
+                "mape": 0.1075310399269555,
+                "window_start": "2020-11-09",
+                "window_end": "2021-11-24"
+            },
+            {
+                "rmse": 75.81393994528656,
+                "mae": 51.11901824751662,
+                "mape": 0.028243364793517994,
+                "window_start": "2021-02-05",
+                "window_end": "2022-03-02"
+            },
+            {
+                "rmse": 392.7470710203824,
+                "mae": 194.77048016688767,
+                "mape": 0.10198519700607446,
+                "window_start": "2021-05-19",
+                "window_end": "2022-06-07"
+            },
+            {
+                "rmse": 293.1535466823449,
+                "mae": 145.99115411294136,
+                "mape": 0.09097238129517204,
+                "window_start": "2021-08-17",
+                "window_end": "2022-09-02"
+            }
+        ],
+        "params_history": [
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            },
+            {
+                "changepoint_prior_scale": 0.5,
+                "seasonality_prior_scale": 1.0
+            }
+        ]
+    },
+    "arima": {
+        "metrics": {
+            "rmse": 0.012891811173818794,
+            "mae": 0.009185773558459507,
+            "mape": 16448569499.89903
+        },
+        "params": [
+            1,
+            0,
+            1
+        ]
+    },
+    "rf": {
+        "metrics": {
+            "rmse": 124.74653536549809,
+            "mae": 93.01501611570271,
+            "mape": 0.05335746616138245
+        },
+        "params": {
+            "bootstrap": true,
+            "ccp_alpha": 0.0,
+            "criterion": "squared_error",
+            "max_depth": null,
+            "max_features": "log2",
+            "max_leaf_nodes": null,
+            "max_samples": null,
+            "min_impurity_decrease": 0.0,
+            "min_samples_leaf": 1,
+            "min_samples_split": 2,
+            "min_weight_fraction_leaf": 0.0,
+            "n_estimators": 100,
+            "n_jobs": null,
+            "oob_score": false,
+            "random_state": 42,
+            "verbose": 0,
+            "warm_start": false
+        }
+    }
+}

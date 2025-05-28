@@ -1,0 +1,9 @@
+{
+    "changepoint_prior_scale": 0.2,
+    "seasonality_prior_scale": 10.0,
+    "yearly_seasonality": false,
+    "weekly_seasonality": false,
+    "daily_seasonality": false,
+    "quarterly_seasonality": true,
+    "monthly_seasonality": true
+}

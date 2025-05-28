@@ -1,0 +1,30 @@
+from setuptools import setup, find_packages
+
+setup(
+    name="stock_prediction_system",
+    version="1.0.0",
+    packages=find_packages(),
+    install_requires=[
+        'pandas==1.3.5',
+        'numpy==1.21.6',
+        'matplotlib==3.5.3',
+        'scikit-learn==1.0.2',
+        'prophet==1.1.4',
+        'statsmodels==0.13.2',
+        'tushare==1.2.89',
+        'flask==2.0.3',
+        'scipy==1.7.3',
+        'seaborn==0.12.2',
+        'joblib==1.1.0',
+        'pmdarima==2.0.3',
+        'tqdm==4.67.1',
+        'holidays==0.58',
+        'python-dateutil==2.9.0.post0',
+    ],
+    python_requires='>=3.8',
+    author="AI股票分析团队",
+    author_email="your.email@example.com",
+    description="基于Prophet/ARIMA/随机森林的多模型股票预测与可视化系统",
+    long_description=open('README.md', encoding='utf-8').read(),
+    long_description_content_type="text/markdown",
+) 
